@@ -88,7 +88,7 @@ function Read-ShouldContinue {
     }
 
     process {
-         $callerFunctionName = (Get-PSCallStack)[1].Command
+        $callerFunctionName = (Get-PSCallStack)[1].Command
 
         if (-not $WhatIfPreference) {
             # Testing shows NoToAll is used before YesToAll
@@ -99,8 +99,14 @@ function Read-ShouldContinue {
             }
 
             # If it's None/Low/Medium
-            $confirmImpact = ((Get-Command $callerFunctionName).ScriptBlock.Attributes | Where-Object { $_ -is [System.Management.Automation.CmdletCommonMetadataAttribute] }).ConfirmImpact
+            $confirmImpact = if (Test-Path function:$callerFunctionName) {
+                ((Get-Command $callerFunctionName).ScriptBlock.Attributes | Where-Object { $_ -is [System.Management.Automation.CmdletCommonMetadataAttribute] }).ConfirmImpact
+            } else {
+                Write-Debug "ConfirmImpact defaulting to Medium"
+                [System.Management.Automation.ConfirmImpact] "Medium"
+            }
             Write-Debug "ConfirmImpact $confirmImpact ConfirmPreference $ConfirmPreference"
+
             if ($ConfirmPreference -eq 0 -or $ConfirmPreference -gt $confirmImpact) {
                 # Then we won't confirm anything
                 if ($HasSecurityImpact) {

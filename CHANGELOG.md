@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - None.
 
+## [1.0.1] - 2019-07-19
+
+### Fixed
+
+- Make it function from a <ScriptBlock> (command line) even though it shouldn't.
+  This makes it easier to demo.
+
 ## [1.0.0] - 2019-07-18
 
 ### Added
