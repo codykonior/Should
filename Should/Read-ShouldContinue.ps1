@@ -81,7 +81,9 @@ function Read-ShouldContinue {
         [Parameter(ParameterSetName = "Query")]
         [ref] $ShouldProcessReason,
         [Parameter(ParameterSetName = "Query")]
-        [scriptblock] $Retry
+        [scriptblock] $Retry,
+
+        [switch] $UsePreference
     )
 
     begin {
@@ -90,7 +92,9 @@ function Read-ShouldContinue {
     process {
         $callerFunctionName = (Get-PSCallStack)[1].Command
 
-        if (-not $WhatIfPreference) {
+        # If we're in a -WhatIf then we don't want to execute the below, which will return on YesToAll/NoToAll and ConfirmPreference
+        # however we might be ignoring those preferences (as we do by default to maintain compatibility) so check for that first.
+        if (-not $UsePreference -or -not $WhatIfPreference) {
             # Testing shows NoToAll is used before YesToAll
             if ($NoToAll -and $NoToAll.Value -eq $true) {
                 return $false
@@ -156,7 +160,7 @@ function Read-ShouldContinue {
                         $Action = $callerFunctionName
                     }
 
-                    if ($WhatIfPreference) {
+                    if ($UsePreference -and $WhatIfPreference) {
                         Write-Information "What if: Performing the operation `"$Action`" on target `"$Target`"." -InformationAction:Continue
                         return
                     } else {
@@ -174,7 +178,7 @@ function Read-ShouldContinue {
                         $VerboseWarning = "Are you sure you want to perform this action?"
                     }
 
-                    if ($WhatIfPreference) {
+                    if ($UsePreference -and $WhatIfPreference) {
                         Write-Information "What if: $VerboseDescription" -InformationAction:Continue
                         return
                     } else {
@@ -190,7 +194,7 @@ function Read-ShouldContinue {
                     }
 
                     # This is our own invention, so who knows what it should look like
-                    if ($WhatIfPreference) {
+                    if ($UsePreference -and $WhatIfPreference) {
                         Write-Information "What if: $Query" -InformationAction:Continue
                         return
                     }
